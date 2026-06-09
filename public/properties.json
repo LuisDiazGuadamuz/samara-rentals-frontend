@@ -1,0 +1,116 @@
+{
+  "properties": [
+    {
+      "id": 1,
+      "name": "Villa Horizonte",
+      "price": 295000,
+      "location": "Escazu",
+      "description": "Residencia de lujo con acabados premium, jardin privado y acceso a servicios de alto nivel.",
+      "images": [
+        "/images/properties/casaarboles/Frente%20de%20casa.jpg",
+        "/images/properties/casaarboles/cocina.jpg",
+        "/images/properties/casaarboles/Habitacion.jpg",
+        "/images/properties/casaarboles/Habitacion%202.jpg",
+        "/images/properties/casaarboles/Parqueo.jpg"
+      ],
+      "beds": 4,
+      "baths": 3,
+      "area": 310,
+      "type": "Casa"
+    },
+    {
+      "id": 2,
+      "name": "Residencial Nativa",
+      "price": 410000,
+      "location": "Santa Ana",
+      "description": "Proyecto contemporaneo con iluminacion natural, cocina integrada y terraza panoramica.",
+      "images": [
+        "/images/properties/casaencanto/Frente%20de%20casa.jpg",
+        "/images/properties/casaencanto/Cocina.jpg",
+        "/images/properties/casaencanto/Dormitorio.jpg",
+        "/images/properties/casaencanto/Ducha.jpg",
+        "/images/properties/casaencanto/Sanitario.jpg",
+        "/images/properties/casaencanto/Segundo%20piso.jpg"
+      ],
+      "beds": 5,
+      "baths": 4,
+      "area": 430,
+      "type": "Casa"
+    },
+    {
+      "id": 3,
+      "name": "Torre Palma Real",
+      "price": 225000,
+      "location": "Curridabat",
+      "description": "Apartamento elegante en torre de alta plusvalia con amenidades de primer nivel y seguridad 24/7.",
+      "images": [
+        "/images/properties/casaflores/Frente%20de%20casa.jpeg",
+        "/images/properties/casaflores/Cocina.jpeg",
+        "/images/properties/casaflores/Habitacion.jpeg",
+        "/images/properties/casaflores/Sala%20de%20estar.jpeg",
+        "/images/properties/casaflores/Sanitario.jpeg",
+        "/images/properties/casaflores/Terrasa.jpeg"
+      ],
+      "beds": 3,
+      "baths": 2,
+      "area": 170,
+      "type": "Apartamento"
+    },
+    {
+      "id": 4,
+      "name": "Bosque Alto Estate",
+      "price": 520000,
+      "location": "Mora",
+      "description": "Propiedad exclusiva rodeada de naturaleza, ideal para inversion patrimonial de largo plazo.",
+      "images": [
+        "/images/properties/casafrancesca/Piscina.jpg",
+        "/images/properties/casafrancesca/Cocina.jpg",
+        "/images/properties/casafrancesca/Habitacion.jpg",
+        "/images/properties/casafrancesca/Sala%20de%20estar.jpg",
+        "/images/properties/casafrancesca/Ba%C3%B1o.jpg"
+      ],
+      "beds": 6,
+      "baths": 5,
+      "area": 560,
+      "type": "Casa"
+    },
+    {
+      "id": 5,
+      "name": "Condominio Lumen",
+      "price": 180000,
+      "location": "Heredia",
+      "description": "Condominio moderno para estilo de vida urbano, con excelente conectividad y diseno funcional.",
+      "images": [
+        "/images/properties/casamarelie/Casa%20frete%20de%20casa.jpg",
+        "/images/properties/casamarelie/Habitacion.jpg",
+        "/images/properties/casamarelie/Sala%20de%20estar.jpg",
+        "/images/properties/casamarelie/Piscina.jpg",
+        "/images/properties/casamarelie/Ba%C3%B1o.jpg"
+      ],
+      "beds": 2,
+      "baths": 2,
+      "area": 120,
+      "type": "Apartamento"
+    },
+    {
+      "id": 6,
+      "name": "Mirador del Sol",
+      "price": 340000,
+      "location": "Alajuela",
+      "description": "Casa familiar con amplios espacios sociales, acabados de lujo y vista panoramica.",
+      "images": [
+        "/images/properties/casapacifica/Piscina.jpg",
+        "/images/properties/casapacifica/Cocina.jpg",
+        "/images/properties/casapacifica/Sala.jpg",
+        "/images/properties/casapacifica/Corredor.jpg",
+        "/images/properties/casapacifica/Habitacion.jpg",
+        "/images/properties/casapacifica/Habitacion%202.jpg",
+        "/images/properties/casapacifica/Ba%C3%B1o.jpg"
+      ],
+      "beds": 4,
+      "baths": 3,
+      "area": 345,
+      "type": "Casa"
+    }
+  ]
+}

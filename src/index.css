@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  color: #1F2933;
+  background-color: #F8F5EF;
+  background-image:
+    radial-gradient(circle at 100% 0%, rgba(199, 154, 43, 0.06), transparent 28%),
+    radial-gradient(circle at 0% 100%, rgba(63, 125, 88, 0.03), transparent 25%);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Compat: map legacy samara-* utility class names to new palette */
+.text-samara-charcoal { color: #1F2933; }
+.text-samara-ash { color: rgba(31,41,51,0.7); }
+.border-samara-stone { border-color: #E7DED2; }
+.bg-samara-ivory { background-color: #F8F5EF; }
+.bg-samara-ivory\/50 { background-color: rgba(248,245,239,0.5); }
+.bg-samara-ivory\/95 { background-color: rgba(248,245,239,0.95); }
+.bg-samara-charcoal { background-color: #1E1E1E; }
+.text-samara-gold { color: #C79A2B; }
+.border-samara-gold { border-color: #C79A2B; }
+.bg-samara-gold { background-color: #C79A2B; }
+.text-samara-stone { color: #DDD8CC; }
+.bg-samara-stone { background-color: #DDD8CC; }
+.bg-white { background-color: #FFFFFF; }
+
+
+/* Headings: Playfair Display for an elegant, boutique look */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  color: #1F2933;
+}
+
+/* Utility classes for consistent UI elements */
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-md px-4 py-2 bg-brand text-white font-medium shadow-sm;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center rounded-md px-4 py-2 border border-border text-text bg-transparent;
+}
+
+.card {
+  background: #FFFFFF;
+  border: 1px solid #E7DED2;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(29,29,31,0.06);
+}

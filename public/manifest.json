@@ -2,8 +2,8 @@
   "name": "Samara Rentals",
   "short_name": "Samara",
   "description": "App inmobiliaria para propiedades en Sámara, Carrillo y Nosara, Costa Rica",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": ".",
+  "scope": ".",
   "display": "standalone",
   "background_color": "#F8F7F4",
   "theme_color": "#C7A24A",
@@ -11,23 +11,23 @@
   "lang": "es-CR",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "/icons/maskable-icon-192.png",
+      "src": "icons/maskable-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/maskable-icon-512.png",
+      "src": "icons/maskable-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

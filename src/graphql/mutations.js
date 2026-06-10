@@ -42,9 +42,7 @@ export const ADD_FAVORITE = gql`
 
 export const REMOVE_FAVORITE = gql`
   mutation RemoveFavorite($propertyId: ID!) {
-    removeFavorite(propertyId: $propertyId) {
-      id
-    }
+    removeFavorite(propertyId: $propertyId)
   }
 `
 

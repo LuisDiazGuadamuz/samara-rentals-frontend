@@ -1,16 +1,28 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import { createInquiry } from '../services/inquiryService'
 import { sanitizeFormData } from '../utils/sanitize'
 
-const initialForm = {
-  name: '',
-  email: '',
-  message: '',
-}
-
 function ContactPage() {
-  const [formValues, setFormValues] = useState(initialForm)
+  const { user } = useAuth()
+  const [formValues, setFormValues] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    message: '',
+  })
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (user) {
+      setFormValues((prevValues) => ({
+        name: prevValues.name || user.name || '',
+        email: prevValues.email || user.email || '',
+        message: prevValues.message,
+      }))
+    }
+  }, [user])
 
   function validate(values) {
     const currentErrors = {}
@@ -39,9 +51,10 @@ function ContactPage() {
     }))
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
     setStatus('idle')
+    setErrors({})
 
     const sanitizedValues = sanitizeFormData(formValues)
     const validationErrors = validate(sanitizedValues)
@@ -53,8 +66,26 @@ function ContactPage() {
       return
     }
 
-    setStatus('success')
-    setFormValues(initialForm)
+    setIsSubmitting(true)
+
+    try {
+      await createInquiry({
+        name: sanitizedValues.name,
+        email: sanitizedValues.email,
+        message: sanitizedValues.message,
+      })
+      setStatus('success')
+      setFormValues({
+        name: user?.name || '',
+        email: user?.email || '',
+        message: '',
+      })
+    } catch (submitError) {
+      console.error('Error enviando consulta de contacto:', submitError)
+      setStatus('error')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -105,9 +136,10 @@ function ContactPage() {
 
         <button
           type="submit"
-          className="inline-flex rounded-full bg-samara-charcoal px-7 py-3 text-sm font-bold text-white transition hover:bg-samara-gold hover:text-samara-charcoal"
+          disabled={isSubmitting}
+          className="inline-flex rounded-full bg-samara-charcoal px-7 py-3 text-sm font-bold text-white transition hover:bg-samara-gold hover:text-samara-charcoal disabled:opacity-60"
         >
-          Enviar mensaje
+          {isSubmitting ? 'Enviando...' : 'Enviar mensaje'}
         </button>
       </form>
 

@@ -1,12 +1,26 @@
 import { MdEmail, MdPhone } from 'react-icons/md'
 
-export default function AgentCard({ agent }) {
+function formatWhatsAppNumber(phone) {
+  const digits = String(phone).replace(/\D+/g, '')
+  return digits
+}
+
+function buildWhatsAppUrl(phone, agentName, propertyTitle) {
+  const formatted = formatWhatsAppNumber(phone)
+  if (!formatted) return null
+
+  const message = `Hola ${agentName},\n\nEstoy interesado en la propiedad:\n${propertyTitle}\n\n¿Podría brindarme más información?\n\nGracias.`
+  return `https://wa.me/${formatted}?text=${encodeURIComponent(message)}`
+}
+
+export default function AgentCard({ agent, onContactAgent, propertyTitle }) {
   if (!agent) return null
 
   const photoUrl = agent.photo && String(agent.photo).trim() ? agent.photo : null
   const agentName = agent.name || 'Agente'
   const agentEmail = agent.email || ''
   const agentPhone = agent.phone || ''
+  const whatsappUrl = buildWhatsAppUrl(agentPhone, agentName, propertyTitle)
 
   return (
     <div className="rounded-2xl border border-samara-stone/70 bg-white p-6 shadow-sm">
@@ -54,20 +68,23 @@ export default function AgentCard({ agent }) {
 
       {/* Botones de contacto */}
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-        {agentEmail && (
-          <a
-            href={`mailto:${agentEmail}`}
+        {onContactAgent && (
+          <button
+            type="button"
+            onClick={onContactAgent}
             className="flex-1 rounded-full border border-samara-charcoal px-4 py-2 text-center text-sm font-semibold text-samara-charcoal transition hover:bg-samara-charcoal hover:text-white"
           >
-            Enviar correo
-          </a>
+            Contactar agente
+          </button>
         )}
-        {agentPhone && (
+        {whatsappUrl && (
           <a
-            href={`tel:${agentPhone}`}
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex-1 rounded-full bg-samara-gold px-4 py-2 text-center text-sm font-semibold text-samara-charcoal transition hover:bg-samara-ash hover:text-white"
           >
-            Llamar
+            WhatsApp
           </a>
         )}
       </div>

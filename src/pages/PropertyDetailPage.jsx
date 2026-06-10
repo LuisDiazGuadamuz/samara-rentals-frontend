@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import ErrorState from '../components/ErrorState'
 import LoadingState from '../components/LoadingState'
@@ -12,7 +12,7 @@ import { getPropertyById } from '../services/propertyService'
 import { formatCurrency } from '../utils/format'
 import { normalizeFeatures } from '../utils/featureIcons'
 import { useAuth } from '../context/AuthContext'
-import { addFavorite } from '../services/favoriteService'
+import { addFavorite, getFavorites, removeFavorite } from '../services/favoriteService'
 import { createInquiry } from '../services/inquiryService'
 
 function PropertyDetailPage() {
@@ -23,32 +23,66 @@ function PropertyDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [favLoading, setFavLoading] = useState(false)
+  const [isFavorite, setIsFavorite] = useState(false)
+  const [usingCachedProperty, setUsingCachedProperty] = useState(false)
   const [inquiryState, setInquiryState] = useState({ name: '', email: '', message: '' })
   const [inquiryStatus, setInquiryStatus] = useState(null)
+  const inquiryFormRef = useRef(null)
+
+  async function loadProperty(signal) {
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const response = await getPropertyById(id, signal)
+      setProperty(response.property)
+      setUsingCachedProperty(response.fromCache)
+    } catch (fetchError) {
+      if (fetchError.name !== 'AbortError') {
+        setError(fetchError.message)
+      }
+      setProperty(null)
+      setUsingCachedProperty(false)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
     const controller = new AbortController()
-
-    async function loadProperty() {
-      setIsLoading(true)
-      setError('')
-
-      try {
-        const response = await getPropertyById(id, controller.signal)
-        setProperty(response)
-      } catch (fetchError) {
-        if (fetchError.name !== 'AbortError') {
-          setError(fetchError.message)
-        }
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadProperty()
+    loadProperty(controller.signal)
 
     return () => controller.abort()
   }, [id])
+
+  useEffect(() => {
+    function handleOnline() {
+      const controller = new AbortController()
+      loadProperty(controller.signal)
+    }
+
+    window.addEventListener('online', handleOnline)
+    return () => window.removeEventListener('online', handleOnline)
+  }, [id])
+
+  useEffect(() => {
+    async function updateFavoriteState() {
+      if (!isAuthenticated || !property?.id) {
+        setIsFavorite(false)
+        return
+      }
+
+      try {
+        const favorites = await getFavorites()
+        const propertyIsFavorite = favorites.some((fav) => String(fav.property?.id) === String(property.id))
+        setIsFavorite(propertyIsFavorite)
+      } catch (err) {
+        console.error('Error al cargar favoritos', err)
+      }
+    }
+
+    updateFavoriteState()
+  }, [isAuthenticated, property?.id])
 
   if (isLoading) {
     return <LoadingState label="Cargando detalle de propiedad..." />
@@ -67,7 +101,7 @@ function PropertyDetailPage() {
   const bathrooms = property.bathrooms ?? property.baths
   const features = normalizeFeatures(property.features)
 
-  async function handleAddFavorite() {
+  async function handleToggleFavorite() {
     if (!isAuthenticated) {
       navigate('/login')
       return
@@ -75,8 +109,13 @@ function PropertyDetailPage() {
 
     setFavLoading(true)
     try {
-      await addFavorite(property.id)
-      // optimistic UX: you could show a toast here
+      if (isFavorite) {
+        await removeFavorite(property.id)
+        setIsFavorite(false)
+      } else {
+        await addFavorite(property.id)
+        setIsFavorite(true)
+      }
     } catch (err) {
       console.error(err)
     } finally {
@@ -104,12 +143,37 @@ function PropertyDetailPage() {
     }
   }
 
+  function handleContactAgent(agent) {
+    if (!agent) return
+
+    const agentName = agent.name || 'Agente'
+    const defaultMessage = `Hola ${agentName},\n\nEstoy interesado en la propiedad:\n${title}\n\n¿Podría brindarme más información?\n\nGracias.`
+
+    setInquiryState((prevState) => ({
+      ...prevState,
+      message: defaultMessage,
+      name: prevState.name || user?.name || '',
+      email: prevState.email || user?.email || '',
+    }))
+    setInquiryStatus(null)
+
+    if (inquiryFormRef.current) {
+      inquiryFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   return (
     <main className="space-y-12">
       {/* SECCIÓN 1: GALERÍA */}
       <section>
         <PropertyGallery images={property.images} title={title} />
       </section>
+
+      {usingCachedProperty ? (
+        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
+          Estás viendo información guardada sin conexión.
+        </div>
+      ) : null}
 
       {/* SECCIÓN 2: INFORMACIÓN PRINCIPAL */}
       <section className="grid gap-8 lg:grid-cols-[1fr_0.5fr]">
@@ -154,12 +218,26 @@ function PropertyDetailPage() {
         {/* COLUMNA DERECHA: AGENTE Y FORMULARIO */}
         <aside className="space-y-6">
           {/* SECCIÓN 6: INFORMACIÓN DEL AGENTE */}
-          {property.agent && <AgentCard agent={property.agent} />}
+          {property.agent && (
+            <AgentCard
+              agent={property.agent}
+              propertyTitle={title}
+              onContactAgent={() => handleContactAgent(property.agent)}
+            />
+          )}
 
           {/* SECCIÓN 7 y 8: FAVORITOS Y CONSULTA */}
           <div className="space-y-3">
-            <button onClick={handleAddFavorite} disabled={favLoading} className="btn-primary w-full disabled:opacity-60">
-              {favLoading ? 'Guardando...' : '❤ Agregar a favoritos'}
+            <button
+              onClick={handleToggleFavorite}
+              disabled={favLoading}
+              className={
+                isFavorite
+                  ? 'w-full rounded-full border border-samara-gold bg-samara-gold/10 px-4 py-3 text-sm font-semibold text-samara-gold transition hover:bg-samara-gold/20 disabled:opacity-60'
+                  : 'btn-primary w-full disabled:opacity-60'
+              }
+            >
+              {favLoading ? 'Actualizando...' : isFavorite ? '♥ Quitar de favoritos' : '♡ Agregar a favoritos'}
             </button>
 
             <Link to="/contact" className="btn-ghost block text-center">
@@ -170,7 +248,7 @@ function PropertyDetailPage() {
           {/* FORMULARIO DE CONSULTA */}
           <div className="rounded-2xl border border-border bg-card p-6">
             <h3 className="mb-4 text-lg font-semibold text-text">Enviar Consulta</h3>
-            <form onSubmit={handleInquirySubmit} className="space-y-3">
+            <form ref={inquiryFormRef} onSubmit={handleInquirySubmit} className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-text">Nombre</label>
                 <input

@@ -2,36 +2,48 @@ import { useEffect, useMemo, useState } from 'react'
 import { getProperties } from '../services/propertyService'
 import { sanitizeInput } from '../utils/sanitize'
 
+
 export function useProperties() {
   const [properties, setProperties] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [usingCachedData, setUsingCachedData] = useState(false)
   const [search, setSearch] = useState('')
   const [location, setLocation] = useState('all')
   const [maxPrice, setMaxPrice] = useState('all')
 
+  async function loadProperties(signal) {
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const { properties: fetchedProperties, fromCache } = await getProperties(signal)
+      setProperties(fetchedProperties)
+      setUsingCachedData(fromCache)
+    } catch (fetchError) {
+      if (fetchError.name !== 'AbortError') {
+        setError(fetchError.message)
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
     const controller = new AbortController()
-
-    async function loadProperties() {
-      setIsLoading(true)
-      setError('')
-
-      try {
-        const data = await getProperties(controller.signal)
-        setProperties(data)
-      } catch (fetchError) {
-        if (fetchError.name !== 'AbortError') {
-          setError(fetchError.message)
-        }
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadProperties()
+    loadProperties(controller.signal)
 
     return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    function handleOnline() {
+      const controller = new AbortController()
+      loadProperties(controller.signal)
+    }
+
+    window.addEventListener('online', handleOnline)
+    return () => window.removeEventListener('online', handleOnline)
   }, [])
 
   const normalized = useMemo(() => {
@@ -47,7 +59,16 @@ export function useProperties() {
     return normalized.filter((property) => {
       const byName = property._name.toLowerCase().includes(sanitizeInput(search).toLowerCase())
 
-      const byLocation = location === 'all' || (property._location || '').toLowerCase() === location.toLowerCase()
+      const normalizedLocation = String(property._location || '')
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .toLowerCase()
+      const normalizedFilter = String(location || '')
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .toLowerCase()
+
+      const byLocation = location === 'all' || normalizedLocation === normalizedFilter
 
       const byPrice = maxPrice === 'all' || property._price <= Number(maxPrice)
 
@@ -65,6 +86,7 @@ export function useProperties() {
     locations,
     isLoading,
     error,
+    usingCachedData,
     search,
     setSearch,
     location,

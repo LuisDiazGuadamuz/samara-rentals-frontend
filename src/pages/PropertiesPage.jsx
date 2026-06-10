@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import ErrorState from '../components/ErrorState'
 import LoadingState from '../components/LoadingState'
 import PropertyCard from '../components/PropertyCard'
@@ -5,6 +7,7 @@ import SearchFilters from '../components/SearchFilters'
 import { usePropertiesContext } from '../context/PropertiesContext'
 
 function PropertiesPage() {
+  const [searchParams] = useSearchParams()
   const {
     filteredProperties,
     locations,
@@ -16,7 +19,15 @@ function PropertiesPage() {
     setMaxPrice,
     isLoading,
     error,
+    usingCachedData,
   } = usePropertiesContext()
+
+  useEffect(() => {
+    const city = searchParams.get('city')
+    if (city) {
+      setLocation(city)
+    }
+  }, [searchParams, setLocation])
 
   return (
     <div className="space-y-6">
@@ -24,6 +35,12 @@ function PropertiesPage() {
         <h1 className="font-display text-4xl text-samara-charcoal">Catalogo de propiedades</h1>
         <p className="text-samara-ash">Explora propiedades en venta con filtros inteligentes.</p>
       </header>
+
+      {usingCachedData ? (
+        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
+          Estás viendo propiedades guardadas sin conexión.
+        </div>
+      ) : null}
 
       <SearchFilters
         search={search}

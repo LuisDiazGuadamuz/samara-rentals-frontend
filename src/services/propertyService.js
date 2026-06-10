@@ -1,5 +1,6 @@
 import client from '../graphql/client'
 import { GET_PROPERTIES, GET_PROPERTY } from '../graphql/queries'
+import { getCachedProperties, savePropertiesToCache } from '../utils/localPropertyCache'
 
 const API_URL = `${import.meta.env.BASE_URL}properties.json`
 
@@ -30,22 +31,27 @@ export async function getProperties(signal) {
   try {
     const { data } = await client.query({ query: GET_PROPERTIES, fetchPolicy: 'network-only' })
     const properties = data?.properties ?? []
-    // cache for offline usage
+
     try {
-      localStorage.setItem('cached_properties', JSON.stringify(properties))
-    } catch (e) {
-      // ignore
+      savePropertiesToCache(properties)
+    } catch (cacheError) {
+      console.error('Error guardando cache de propiedades:', cacheError)
     }
-    return properties.map(normalizeProperty)
+
+    return {
+      properties: properties.map(normalizeProperty),
+      fromCache: false,
+    }
   } catch (error) {
-    // On error, try to fall back to cached properties or the old static file
-    const cached = localStorage.getItem('cached_properties')
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached)
-        return parsed.map(normalizeProperty)
-      } catch (e) {
-        // ignore
+    if (error.name === 'AbortError') {
+      throw error
+    }
+
+    const cached = getCachedProperties()
+    if (cached.length > 0) {
+      return {
+        properties: cached.map(normalizeProperty),
+        fromCache: true,
       }
     }
 
@@ -62,14 +68,14 @@ export async function getProperties(signal) {
       if (response.ok) {
         const data = await response.json()
         const properties = data.properties ?? []
-        return properties.map(normalizeProperty)
+
+        return {
+          properties: properties.map(normalizeProperty),
+          fromCache: true,
+        }
       }
     } catch (_) {
       // ignore
-    }
-
-    if (error.name === 'AbortError') {
-      throw error
     }
 
     throw new Error(error.message || 'Error de red al consultar propiedades.')
@@ -81,16 +87,35 @@ export async function getPropertyById(id, signal) {
     const { data } = await client.query({ query: GET_PROPERTY, variables: { id }, fetchPolicy: 'network-only' })
     const property = data?.property
     if (!property) throw new Error('Propiedad no encontrada.')
-    return normalizeProperty(property)
+
+    return {
+      property: normalizeProperty(property),
+      fromCache: false,
+    }
   } catch (error) {
-    // fallback to listing and find
-    const properties = await getProperties(signal)
+    if (error.name === 'AbortError') {
+      throw error
+    }
+
+    const cached = getCachedProperties()
+    const cachedProperty = cached.find((item) => String(item.id) === String(id))
+    if (cachedProperty) {
+      return {
+        property: normalizeProperty(cachedProperty),
+        fromCache: true,
+      }
+    }
+
+    const { properties, fromCache } = await getProperties(signal)
     const property = properties.find((item) => String(item.id) === String(id))
 
     if (!property) {
       throw new Error('Propiedad no encontrada.')
     }
 
-    return property
+    return {
+      property,
+      fromCache,
+    }
   }
 }

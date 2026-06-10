@@ -2,6 +2,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig(({ command }) => ({
-  base: command === 'serve' ? '/' : '/Proyecto1_FundamentosWeb/',
+  base: command === "serve" ? "/" : "/samara-rentals-frontend/",
   plugins: [react()],
 }))

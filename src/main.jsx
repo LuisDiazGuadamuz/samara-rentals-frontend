@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import { HashRouter } from 'react-router-dom'
 import { ApolloProvider } from '@apollo/client'
 import client from './graphql/client'
 import App from './App'
@@ -19,9 +19,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ApolloProvider client={client}>
       <AuthProvider>
-        <BrowserRouter basename={import.meta.env.BASE_URL}>
+        <HashRouter>
           <App />
-        </BrowserRouter>
+        </HashRouter>
       </AuthProvider>
     </ApolloProvider>
   </StrictMode>,
